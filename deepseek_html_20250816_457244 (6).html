@@ -1,0 +1,2459 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>نظام إدارة المخزون المتكامل</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+      color: white;
+      min-height: 100vh;
+      line-height: 1.6;
+      padding: 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      gap: 20px;
+    }
+    
+    .header {
+      text-align: center;
+      padding: 20px 0;
+      margin-bottom: 30px;
+      border-bottom: 2px solid #f39c12;
+    }
+    
+    .header h1 {
+      color: #f39c12;
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+    
+    .header p {
+      color: #ecf0f1;
+      font-size: 1.1rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .sidebar {
+      width: 280px;
+      background-color: rgba(44, 62, 80, 0.8);
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      height: fit-content;
+    }
+    
+    .sidebar-header {
+      text-align: center;
+      padding-bottom: 15px;
+      margin-bottom: 15px;
+      border-bottom: 1px solid #34495e;
+    }
+    
+    .sidebar-header h3 {
+      color: #f39c12;
+      font-size: 1.5rem;
+    }
+    
+    .sidebar-menu {
+      list-style: none;
+    }
+    
+    .sidebar-section {
+      padding: 10px 0;
+      font-weight: bold;
+      color: #bdc3c7;
+      border-bottom: 1px solid #34495e;
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .sidebar-menu li a {
+      display: flex;
+      align-items: center;
+      padding: 10px 15px;
+      color: #ecf0f1;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: all 0.3s;
+      margin-bottom: 5px;
+      gap: 10px;
+    }
+    
+    .sidebar-menu li a:hover {
+      background-color: #34495e;
+      transform: translateX(-5px);
+    }
+    
+    .sidebar-menu li a.active {
+      background-color: #f39c12;
+      color: #2c3e50;
+      font-weight: bold;
+    }
+    
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+    
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 15px;
+      background: rgba(44, 62, 80, 0.5);
+      border-radius: 10px;
+      transition: transform 0.3s;
+    }
+    
+    .stat-item:hover {
+      transform: translateY(-5px);
+    }
+    
+    .stat-icon {
+      width: 60px;
+      height: 60px;
+      background: #f39c12;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+    }
+    
+    .stat-info {
+      flex: 1;
+    }
+    
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #f39c12;
+    }
+    
+    .stat-label {
+      font-size: 1rem;
+      color: #bdc3c7;
+    }
+    
+    .content-section {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #f39c12;
+    }
+    
+    .section-title {
+      color: #f39c12;
+      font-size: 1.8rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .section-actions {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .btn-primary {
+      background-color: #f39c12;
+      color: #2c3e50;
+    }
+    
+    .btn-primary:hover {
+      background-color: #e67e22;
+      transform: translateY(-3px);
+    }
+    
+    .btn-secondary {
+      background-color: #3498db;
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background-color: #2980b9;
+      transform: translateY(-3px);
+    }
+    
+    .btn-danger {
+      background-color: #e74c3c;
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      background-color: #c0392b;
+      transform: translateY(-3px);
+    }
+    
+    .btn-refresh {
+      background-color: #2ecc71;
+      color: white;
+    }
+    
+    .btn-refresh:hover {
+      background-color: #27ae60;
+      transform: translateY(-3px);
+    }
+    
+    .items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    
+    .items-table th {
+      background-color: #f39c12;
+      color: #2c3e50;
+      padding: 15px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+    
+    .items-table td {
+      padding: 12px 15px;
+      text-align: center;
+      border-bottom: 1px solid #34495e;
+    }
+    
+    .items-table tr:nth-child(even) {
+      background: rgba(44, 62, 80, 0.3);
+    }
+    
+    .items-table tr:hover {
+      background-color: rgba(243, 156, 18, 0.15);
+    }
+    
+    .items-table .code {
+      color: #f39c12;
+      font-weight: bold;
+    }
+    
+    .status-indicator {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: bold;
+    }
+    
+    .status-available {
+      background-color: rgba(46, 204, 113, 0.2);
+      color: #2ecc71;
+      border: 1px solid #2ecc71;
+    }
+    
+    .status-low {
+      background-color: rgba(231, 76, 60, 0.2);
+      color: #e74c3c;
+      border: 1px solid #e74c3c;
+    }
+    
+    .status-out {
+      background-color: rgba(192, 57, 43, 0.3);
+      color: #c0392b;
+      border: 1px solid #c0392b;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+    
+    .action-btn {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .edit-btn {
+      background-color: #3498db;
+      color: white;
+    }
+    
+    .edit-btn:hover {
+      background-color: #2980b9;
+    }
+    
+    .delete-btn {
+      background-color: #e74c3c;
+      color: white;
+    }
+    
+    .delete-btn:hover {
+      background-color: #c0392b;
+    }
+    
+    .barcode-btn {
+      background-color: #9b59b6;
+      color: white;
+    }
+    
+    .barcode-btn:hover {
+      background-color: #8e44ad;
+    }
+    
+    .eye-btn {
+      background-color: #16a085;
+      color: white;
+    }
+    
+    .eye-btn:hover {
+      background-color: #1abc9c;
+    }
+    
+    .brands-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+    
+    .brand-card {
+      background: rgba(44, 62, 80, 0.5);
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.3s;
+      border-left: 4px solid #f39c12;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .brand-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .brand-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #34495e;
+      gap: 15px;
+    }
+    
+    .brand-icon {
+      width: 50px;
+      height: 50px;
+      background: #f39c12;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+    
+    .brand-name {
+      color: #f39c12;
+      font-size: 1.4rem;
+      font-weight: bold;
+    }
+    
+    .brand-description {
+      margin-top: 10px;
+      color: #bdc3c7;
+      line-height: 1.6;
+      min-height: 60px;
+    }
+    
+    .brand-stats {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #34495e;
+    }
+    
+    .brand-stat {
+      text-align: center;
+      flex: 1;
+    }
+    
+    .stat-number {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #f39c12;
+    }
+    
+    .stat-label {
+      font-size: 0.9rem;
+      color: #bdc3c7;
+    }
+    
+    .brand-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    
+    .filters {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      min-width: 200px;
+      flex: 1;
+    }
+    
+    .filter-label {
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: #f39c12;
+    }
+    
+    .filter-select {
+      padding: 12px 15px;
+      border-radius: 8px;
+      border: 1px solid #34495e;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      font-size: 1rem;
+    }
+    
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 15px 25px;
+      border-radius: 8px;
+      background: #27ae60;
+      color: white;
+      font-weight: bold;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      z-index: 2000;
+      opacity: 0;
+      transform: translateY(100px);
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .toast.error {
+      background: #e74c3c;
+    }
+    
+    @media (max-width: 1100px) {
+      .container {
+        flex-direction: column;
+      }
+      
+      .sidebar {
+        width: 100%;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .stats-bar {
+        grid-template-columns: 1fr;
+      }
+      
+      .section-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+      }
+      
+      .section-actions {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .filters {
+        flex-direction: column;
+      }
+      
+      .items-table {
+        font-size: 0.9rem;
+      }
+      
+      .items-table th, 
+      .items-table td {
+        padding: 8px 5px;
+      }
+      
+      .action-buttons {
+        flex-direction: column;
+      }
+      
+      .add-item-form-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .add-item-form-grid .form-group:last-child {
+        grid-column: 1;
+      }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .critical-item {
+      background: rgba(231, 76, 60, 0.2) !important;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { background: rgba(231, 76, 60, 0.2); }
+      50% { background: rgba(231, 76, 60, 0.3); }
+      100% { background: rgba(231, 76, 60, 0.2); }
+    }
+    
+    .low-stock-header {
+      background: linear-gradient(135deg, #e74c3c, #c0392b) !important;
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      overflow: auto;
+      backdrop-filter: blur(5px);
+    }
+    
+    .modal-content {
+      background: linear-gradient(135deg, #1a2a6c, #b21f1f);
+      margin: 5% auto;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      max-width: 800px;
+      width: 90%;
+      animation: fadeIn 0.4s;
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #f39c12;
+    }
+    
+    .modal-title {
+      color: #f39c12;
+      font-size: 1.8rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .close-btn {
+      color: #ecf0f1;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .close-btn:hover {
+      color: #f39c12;
+      transform: rotate(90deg);
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: #f39c12;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 12px 15px;
+      border-radius: 8px;
+      border: 1px solid #34495e;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      font-size: 1rem;
+      transition: all 0.3s;
+    }
+    
+    .form-input:focus {
+      border-color: #f39c12;
+      background: rgba(255, 255, 255, 0.15);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.3);
+    }
+    
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
+      margin-top: 25px;
+    }
+    
+    .btn-cancel {
+      background-color: #7f8c8d;
+      color: white;
+    }
+    
+    .btn-cancel:hover {
+      background-color: #636e72;
+    }
+    
+    .search-container {
+      display: flex;
+      margin-bottom: 20px;
+      gap: 10px;
+    }
+    
+    .barcode-search {
+      flex: 1;
+      padding: 12px 15px;
+      border-radius: 8px;
+      border: 1px solid #34495e;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      font-size: 1rem;
+    }
+    
+    .barcode-search:focus {
+      border-color: #f39c12;
+      background: rgba(255, 255, 255, 0.15);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.3);
+    }
+    
+    .search-btn {
+      padding: 12px 20px;
+      border-radius: 8px;
+      border: none;
+      background-color: #3498db;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+    
+    .search-btn:hover {
+      background-color: #2980b9;
+    }
+    
+    .barcode-prefix {
+      color: #f39c12;
+      font-weight: bold;
+    }
+    
+    .barcode-input {
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      border: 1px solid #34495e;
+      overflow: hidden;
+    }
+    
+    .barcode-prefix-box {
+      padding: 12px 15px;
+      background: rgba(243, 156, 18, 0.2);
+      color: #f39c12;
+      font-weight: bold;
+    }
+    
+    .barcode-input input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: white;
+      padding: 12px 15px;
+      outline: none;
+    }
+    
+    .items-table th:nth-child(9), 
+    .items-table td:nth-child(9) {
+      min-width: 120px;
+    }
+    
+    .items-table th:nth-child(10), 
+    .items-table td:nth-child(10) {
+      min-width: 120px;
+    }
+    
+    .items-table th:nth-child(12), 
+    .items-table td:nth-child(12) {
+      min-width: 150px;
+    }
+    
+    .items-table th:nth-child(11), 
+    .items-table td:nth-child(11) {
+      min-width: 100px;
+    }
+    
+    .barcode-container {
+      text-align: center;
+      padding: 20px;
+    }
+    
+    .barcode-display {
+      margin: 20px 0;
+      padding: 20px;
+      background: white;
+      border-radius: 10px;
+      display: inline-block;
+    }
+    
+    .barcode-text {
+      margin-top: 15px;
+      font-size: 1.2rem;
+      color: #f39c12;
+      font-weight: bold;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 10px 20px;
+      border-radius: 8px;
+    }
+    
+    .movement-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    
+    .movement-table th {
+      background-color: #f39c12;
+      color: #2c3e50;
+      padding: 12px;
+      text-align: center;
+      font-weight: bold;
+    }
+    
+    .movement-table td {
+      padding: 10px 12px;
+      text-align: center;
+      border-bottom: 1px solid #34495e;
+    }
+    
+    .movement-table tr:nth-child(even) {
+      background: rgba(44, 62, 80, 0.3);
+    }
+    
+    .movement-type {
+      display: inline-block;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: bold;
+    }
+    
+    .type-supply {
+      background-color: rgba(46, 204, 113, 0.2);
+      color: #2ecc71;
+      border: 1px solid #2ecc71;
+    }
+    
+    .type-sale {
+      background-color: rgba(155, 89, 182, 0.2);
+      color: #9b59b6;
+      border: 1px solid #9b59b6;
+    }
+    
+    .type-adjustment {
+      background-color: rgba(52, 152, 219, 0.2);
+      color: #3498db;
+      border: 1px solid #3498db;
+    }
+    
+    .type-return {
+      background-color: rgba(231, 76, 60, 0.2);
+      color: #e74c3c;
+      border: 1px solid #e74c3c;
+    }
+    
+    .item-details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: rgba(44, 62, 80, 0.5);
+      border-radius: 10px;
+    }
+    
+    .detail-box {
+      flex: 1;
+      min-width: 200px;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+    }
+    
+    .detail-label {
+      color: #bdc3c7;
+      font-size: 0.9rem;
+      margin-bottom: 5px;
+    }
+    
+    .detail-value {
+      color: #f39c12;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    
+    /* تنسيق نموذج الإضافة كما في النسخة الأصلية */
+    .add-item-form {
+      background: rgba(44, 62, 80, 0.5);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 25px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      animation: fadeIn 0.5s ease;
+    }
+    
+    .add-item-form h3 {
+      color: #f39c12;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.5rem;
+    }
+    
+    .add-item-form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+    
+    .add-item-form-grid .form-group {
+      margin-bottom: 0;
+    }
+    
+    .add-item-form-grid .form-group:last-child {
+      grid-column: span 3;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    
+    .add-item-form-grid .form-input {
+      padding: 10px 12px;
+      font-size: 0.95rem;
+    }
+    
+    .add-item-form-grid .form-label {
+      font-size: 0.9rem;
+      margin-bottom: 5px;
+    }
+    
+    .add-item-form-grid .btn-primary {
+      padding: 10px 15px;
+    }
+    
+    .add-item-form-grid .barcode-input input {
+      padding: 10px 12px;
+    }
+    
+    .add-item-form-grid .barcode-prefix-box {
+      padding: 10px 12px;
+    }
+    
+    .movement-filter {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 20px 0;
+      padding: 10px;
+      background: rgba(44, 62, 80, 0.5);
+      border-radius: 10px;
+    }
+    
+    .movement-filter label {
+      font-weight: bold;
+      color: #f39c12;
+      margin-left: 10px;
+    }
+    
+    .movement-filter select {
+      padding: 8px 15px;
+      border-radius: 8px;
+      border: 1px solid #34495e;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      font-size: 1rem;
+      min-width: 120px;
+    }
+    
+    @media (max-width: 768px) {
+      .add-item-form-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .add-item-form-grid .form-group:last-child {
+        grid-column: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1><i class="fas fa-boxes"></i> نظام إدارة المخزون المتكامل</h1>
+    <p>نظام متكامل لإدارة الأصناف والعلامات التجارية والمخزون الناقص</p>
+  </div>
+  
+  <div class="container">
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h3><i class="fas fa-warehouse"></i> قوائم النظام</h3>
+      </div>
+      
+      <ul class="sidebar-menu">
+        <li class="sidebar-section">
+          <i class="fas fa-boxes"></i> الأصناف
+        </li>
+        <li><a href="#" class="active" data-page="items"><i class="fas fa-list"></i> قائمة الأصناف</a></li>
+        <li><a href="#" data-page="low-stock"><i class="fas fa-exclamation-circle"></i> الأصناف الناقصة</a></li>
+        <li><a href="https://www.partslink24.com/partslink24/user/login.do" target="_blank"><i class="fas fa-external-link-alt"></i> استعلام PartsLink24</a></li>
+        
+        <li class="sidebar-section">
+          <i class="fas fa-tags"></i> العلامات التجارية
+        </li>
+        <li><a href="#" data-page="brands"><i class="fas fa-copyright"></i> قائمة العلامات التجارية</a></li>
+        
+        <li class="sidebar-section">
+          <i class="fas fa-list-alt"></i> الأنواع
+        </li>
+        <li><a href="#" data-page="types"><i class="fas fa-th-list"></i> قائمة الأنواع</a></li>
+        
+        <li class="sidebar-section">
+          <i class="fas fa-chart-line"></i> التقارير
+        </li>
+        <li><a href="#" data-page="reports"><i class="fas fa-chart-bar"></i> تقارير المخزون</a></li>
+        
+        <li class="sidebar-section">
+          <i class="fas fa-warehouse"></i> المخزون
+        </li>
+        <li><a href="#" data-page="inventory"><i class="fas fa-list-ol"></i> قائمة المخزون</a></li>
+      </ul>
+    </div>
+    
+    <div class="content">
+      <div class="stats-bar">
+        <div class="stat-item">
+          <div class="stat-icon">
+            <i class="fas fa-box"></i>
+          </div>
+          <div class="stat-info">
+            <div class="stat-value" id="total-items">0</div>
+            <div class="stat-label">إجمالي الأصناف</div>
+          </div>
+        </div>
+        
+        <div class="stat-item">
+          <div class="stat-icon">
+            <i class="fas fa-tag"></i>
+          </div>
+          <div class="stat-info">
+            <div class="stat-value" id="total-brands">0</div>
+            <div class="stat-label">العلامات التجارية</div>
+          </div>
+        </div>
+        
+        <div class="stat-item">
+          <div class="stat-icon">
+            <i class="fas fa-list-alt"></i>
+          </div>
+          <div class="stat-info">
+            <div class="stat-value" id="total-types">0</div>
+            <div class="stat-label">الأنواع</div>
+          </div>
+        </div>
+        
+        <div class="stat-item">
+          <div class="stat-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <div class="stat-info">
+            <div class="stat-value" id="low-stock-count">0</div>
+            <div class="stat-label">أصناف ناقصة</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- قسم قائمة الأصناف -->
+      <div class="content-section" id="items-section">
+        <div class="section-header">
+          <h2 class="section-title"><i class="fas fa-list"></i> قائمة الأصناف</h2>
+          <div class="section-actions">
+            <button class="btn btn-refresh" id="refresh-items">
+              <i class="fas fa-sync-alt"></i> تحديث
+            </button>
+          </div>
+        </div>
+        
+        <!-- نموذج الإضافة المبسط - تم تعديله ليكون في صفوف كما في الأصل -->
+        <div class="add-item-form">
+          <h3 id="form-title"><i class="fas fa-plus-circle"></i> إضافة صنف جديد</h3>
+          <form id="simple-item-form">
+            <input type="hidden" id="edit-item-id" value="">
+            <div class="add-item-form-grid">
+              <div class="form-group">
+                <label class="form-label">اسم الصنف</label>
+                <input type="text" class="form-input" id="simple-item-name" required placeholder="اسم الصنف">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">باركود</label>
+                <div class="barcode-input">
+                  <div class="barcode-prefix-box">FU</div>
+                  <input type="text" id="simple-item-barcode" placeholder="رقم الباركود" required>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">العلامة التجارية</label>
+                <select class="form-input" id="simple-item-brand" required>
+                  <option value="">اختر علامة تجارية</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">النوع</label>
+                <select class="form-input" id="simple-item-type" required>
+                  <option value="">اختر نوع الصنف</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">رقم الجزء 1</label>
+                <input type="text" class="form-input" id="simple-item-part1" placeholder="رقم الجزء 1">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">رقم الجزء 2</label>
+                <input type="text" class="form-input" id="simple-item-part2" placeholder="رقم الجزء 2">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">الكمية</label>
+                <input type="number" class="form-input" id="simple-item-quantity" min="0" required placeholder="الكمية">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">التكلفة (جنيه)</label>
+                <input type="number" class="form-input" id="simple-item-cost" min="0" step="0.01" required placeholder="التكلفة">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">السعر (جنيه)</label>
+                <input type="number" class="form-input" id="simple-item-price" min="1" step="0.01" required placeholder="السعر">
+              </div>
+              
+              <div class="form-group">
+                <button type="submit" class="btn btn-primary" id="submit-btn">
+                  <i class="fas fa-plus"></i> إضافة صنف
+                </button>
+                <button type="button" class="btn btn-cancel" id="cancel-edit" style="display: none;">
+                  إلغاء التعديل
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+        
+        <div class="filters">
+          <div class="filter-group">
+            <label class="filter-label">العلامة التجارية</label>
+            <select class="filter-select" id="brand-filter">
+              <option value="all">الكل</option>
+            </select>
+          </div>
+          
+          <div class="filter-group">
+            <label class="filter-label">النوع</label>
+            <select class="filter-select" id="type-filter">
+              <option value="all">الكل</option>
+            </select>
+          </div>
+          
+          <div class="filter-group">
+            <label class="filter-label">حالة الصنف</label>
+            <select class="filter-select" id="status-filter">
+              <option value="all">الكل</option>
+              <option value="available">متوفر</option>
+              <option value="low">ناقص</option>
+              <option value="out">منتهي</option>
+            </select>
+          </div>
+        </div>
+        
+        <!-- حقل بحث الباركود -->
+        <div class="search-container">
+          <input type="text" class="barcode-search" id="barcode-search" placeholder="ابحث بالباركود (ابدأ بـ FU)">
+          <button class="search-btn" id="search-btn">
+            <i class="fas fa-search"></i> بحث
+          </button>
+        </div>
+        
+        <div class="table-container">
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>رقم الصنف</th>
+                <th>اسم الصنف</th>
+                <th>باركود</th>
+                <th>العلامة التجارية</th>
+                <th>النوع</th>
+                <th>الكمية</th>
+                <th>التكلفة</th>
+                <th>السعر</th>
+                <th>رقم الجزء 1</th>
+                <th>رقم الجزء 2</th>
+                <th>الحالة</th>
+                <th>العمليات</th>
+              </tr>
+            </thead>
+            <tbody id="items-table-body">
+              <!-- سيتم تعبئة البيانات ديناميكياً -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- قسم الأصناف الناقصة -->
+      <div class="content-section" id="low-stock-section" style="display:none">
+        <div class="section-header">
+          <h2 class="section-title"><i class="fas fa-exclamation-circle"></i> الأصناف الناقصة</h2>
+          <div class="section-actions">
+            <button class="btn btn-refresh" id="refresh-low-stock">
+              <i class="fas fa-sync-alt"></i> تحديث
+            </button>
+            <button class="btn btn-danger">
+              <i class="fas fa-file-pdf"></i> تصدير تقرير
+            </button>
+          </div>
+        </div>
+        
+        <div class="table-container">
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th class="low-stock-header">رقم الصنف</th>
+                <th class="low-stock-header">اسم الصنف</th>
+                <th class="low-stock-header">باركود</th>
+                <th class="low-stock-header">العلامة التجارية</th>
+                <th class="low-stock-header">الكمية</th>
+                <th class="low-stock-header">الحد الأدنى</th>
+                <th class="low-stock-header">النقص</th>
+                <th class="low-stock-header">الحالة</th>
+                <th class="low-stock-header">العمليات</th>
+              </tr>
+            </thead>
+            <tbody id="low-stock-table-body">
+              <!-- سيتم تعبئة البيانات ديناميكياً -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- قسم العلامات التجارية -->
+      <div class="content-section" id="brands-section" style="display:none">
+        <div class="section-header">
+          <h2 class="section-title"><i class="fas fa-tags"></i> العلامات التجارية</h2>
+          <div class="section-actions">
+            <button class="btn btn-refresh" id="refresh-brands">
+              <i class="fas fa-sync-alt"></i> تحديث
+            </button>
+            <button class="btn btn-primary" id="add-brand">
+              <i class="fas fa-plus"></i> إضافة علامة
+            </button>
+          </div>
+        </div>
+        
+        <div class="brands-container" id="brands-container">
+          <!-- سيتم تعبئة العلامات التجارية ديناميكياً -->
+        </div>
+      </div>
+      
+      <!-- قسم الأنواع -->
+      <div class="content-section" id="types-section" style="display:none">
+        <div class="section-header">
+          <h2 class="section-title"><i class="fas fa-list-alt"></i> قائمة الأنواع</h2>
+          <div class="section-actions">
+            <button class="btn btn-refresh" id="refresh-types">
+              <i class="fas fa-sync-alt"></i> تحديث
+            </button>
+            <button class="btn btn-primary" id="add-type">
+              <i class="fas fa-plus"></i> إضافة نوع
+            </button>
+          </div>
+        </div>
+        
+        <div class="table-container">
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>رقم النوع</th>
+                <th>اسم النوع</th>
+                <th>عدد الأصناف</th>
+                <th>الوصف</th>
+                <th>العمليات</th>
+              </tr>
+            </thead>
+            <tbody id="types-table-body">
+              <!-- سيتم تعبئة البيانات ديناميكياً -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- نموذج إضافة علامة تجارية جديدة -->
+  <div id="add-brand-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title"><i class="fas fa-tag"></i> إضافة علامة تجارية جديدة</h2>
+        <span class="close-btn">&times;</span>
+      </div>
+      
+      <form id="brand-form">
+        <input type="hidden" id="edit-brand-id" value="">
+        <div class="form-group">
+          <label class="form-label">اسم العلامة التجارية</label>
+          <input type="text" class="form-input" id="brand-name" required placeholder="أدخل اسم العلامة التجارية">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">رمز العلامة التجارية</label>
+          <input type="text" class="form-input" id="brand-code" required placeholder="أدخل رمز مكون من حرفين">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">الوصف</label>
+          <textarea class="form-input" id="brand-description" rows="3" required placeholder="أدخل وصف العلامة التجارية"></textarea>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn btn-cancel" id="cancel-brand">إلغاء</button>
+          <button type="submit" class="btn btn-primary">حفظ العلامة التجارية</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- نموذج إضافة نوع جديد -->
+  <div id="add-type-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title"><i class="fas fa-list-alt"></i> إضافة نوع جديد</h2>
+        <span class="close-btn">&times;</span>
+      </div>
+      
+      <form id="type-form">
+        <input type="hidden" id="edit-type-id" value="">
+        <div class="form-group">
+          <label class="form-label">اسم النوع</label>
+          <input type="text" class="form-input" id="type-name" required placeholder="أدخل اسم النوع">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">الوصف</label>
+          <textarea class="form-input" id="type-description" rows="3" required placeholder="أدخل وصف النوع"></textarea>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn btn-cancel" id="cancel-type">إلغاء</button>
+          <button type="submit" class="btn btn-primary">حفظ النوع</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- نافذة عرض الباركود -->
+  <div id="barcode-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title"><i class="fas fa-barcode"></i> باركود الصنف</h2>
+        <span class="close-btn">&times;</span>
+      </div>
+      
+      <div class="barcode-container">
+        <div id="barcode-display" class="barcode-display">
+          <svg id="barcode-svg"></svg>
+        </div>
+        <div id="barcode-text" class="barcode-text"></div>
+        
+        <div class="form-actions">
+          <button class="btn btn-cancel" id="close-barcode">إغلاق</button>
+          <button class="btn btn-primary" id="print-barcode">
+            <i class="fas fa-print"></i> طباعة الباركود
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- نافذة حركة الصنف -->
+  <div id="movement-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title"><i class="fas fa-history"></i> حركة الصنف</h2>
+        <span class="close-btn">&times;</span>
+      </div>
+      
+      <div id="item-details" class="item-details">
+        <div class="detail-box">
+          <div class="detail-label">اسم الصنف</div>
+          <div class="detail-value" id="movement-item-name">-</div>
+        </div>
+        <div class="detail-box">
+          <div class="detail-label">الباركود</div>
+          <div class="detail-value" id="movement-item-barcode">-</div>
+        </div>
+        <div class="detail-box">
+          <div class="detail-label">الكمية المتاحة</div>
+          <div class="detail-value" id="movement-item-quantity">-</div>
+        </div>
+        <div class="detail-box">
+          <div class="detail-label">تاريخ الإضافة</div>
+          <div class="detail-value" id="movement-item-date">-</div>
+        </div>
+      </div>
+      
+      <div class="movement-filter">
+        <label for="movement-type-filter">تصفية بنوع الحركة:</label>
+        <select id="movement-type-filter" class="filter-select">
+          <option value="all">الكل</option>
+          <option value="توريد">توريد</option>
+          <option value="بيع">بيع</option>
+          <option value="تسوية">تسوية</option>
+          <option value="مرتجع">مرتجع</option>
+        </select>
+      </div>
+      
+      <h3 style="color: #f39c12; margin: 20px 0 10px; text-align: center;">
+        <i class="fas fa-exchange-alt"></i> حركة الصنف
+      </h3>
+      
+      <div class="table-container">
+        <table class="movement-table">
+          <thead>
+            <tr>
+              <th>التاريخ</th>
+              <th>نوع الحركة</th>
+              <th>الكمية</th>
+              <th>المستخدم</th>
+              <th>ملاحظات</th>
+            </tr>
+          </thead>
+          <tbody id="movement-table-body">
+            <!-- سيتم تعبئة البيانات ديناميكياً -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <div id="toast" class="toast">
+    <i class="fas fa-check-circle"></i>
+    <span>تم تنفيذ العملية بنجاح</span>
+  </div>
+  
+  <script>
+    // تعريف متغير لتخزين الصنف الحالي في نافذة الحركة
+    let currentMovementItem = null;
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // بيانات العلامات التجارية
+      const brands = [
+        { id: 1, name: "فولكس فاجن", code: "VW", description: "شركة ألمانية لصناعة السيارات", items: 8 },
+        { id: 2, name: "تويوتا", code: "TY", description: "شركة يابانية لصناعة السيارات", items: 12 },
+        { id: 3, name: "مرسيدس", code: "MB", description: "شركة ألمانية لصناعة السيارات الفاخرة", items: 5 },
+        { id: 4, name: "فورد", code: "FD", description: "شركة أمريكية لصناعة السيارات", items: 7 },
+        { id: 5, name: "بيجو", code: "PG", description: "شركة فرنسية لصناعة السيارات", items: 6 }
+      ];
+      
+      // بيانات الأنواع
+      const types = [
+        { id: 1, name: "إلكترونيات", description: "الأصناف الإلكترونية", items: 5 },
+        { id: 2, name: "ميكانيكا", description: "الأجزاء الميكانيكية", items: 8 },
+        { id: 3, name: "أدوات", description: "أدوات متنوعة", items: 6 },
+        { id: 4, name: "مستهلكات", description: "مواد مستهلكة", items: 4 }
+      ];
+      
+      // بيانات الأصناف مع الباركود الذي يبدأ بـ "FU"
+      let items = [
+        { id: 101, name: "فلتر زيت 1600 سي سي", part1: "VW-101", part2: "FZ-1600", 
+          barcode: "FU101", brand: "VW", type: "ميكانيكا", quantity: 8, minQuantity: 15, 
+          cost: 950, price: 1250, description: "فلتر زيت للسيارات الصغيرة",
+          addedDate: "2023-10-15", movements: [] },
+          
+        { id: 102, name: "شمعة احتراق", part1: "TY-102", part2: "SC-202", 
+          barcode: "FU102", brand: "TY", type: "ميكانيكا", quantity: 22, minQuantity: 20, 
+          cost: 700, price: 980, description: "شمعة احتراق للسيارات اليابانية",
+          addedDate: "2023-09-22", movements: [] },
+          
+        { id: 103, name: "بوجيهات", part1: "MB-103", part2: "BJ-303", 
+          barcode: "FU103", brand: "MB", type: "ميكانيكا", quantity: 12, minQuantity: 15, 
+          cost: 850, price: 1150, description: "بوجيهات للسيارات الأوروبية",
+          addedDate: "2023-11-05", movements: [] },
+          
+        { id: 104, name: "كفر زيت", part1: "FD-104", part2: "KZ-404", 
+          barcode: "FU104", brand: "FD", type: "مستهلكات", quantity: 0, minQuantity: 10, 
+          cost: 1900, price: 2400, description: "كفر زيت للشاحنات الصغيرة",
+          addedDate: "2023-08-30", movements: [] },
+          
+        { id: 105, name: "زيت محرك", part1: "PG-105", part2: "ZM-505", 
+          barcode: "FU105", brand: "PG", type: "مستهلكات", quantity: 25, minQuantity: 30, 
+          cost: 1400, price: 1780, description: "زيت محرك 10W40",
+          addedDate: "2023-12-10", movements: [] }
+      ];
+      
+      // توليد حركات عشوائية للأصناف
+      const movementTypes = ["توريد", "بيع", "تسوية", "مرتجع"];
+      const users = ["أحمد محمد", "محمد علي", "سارة عبدالله", "عمر خالد", "ليلى فاروق"];
+      
+      items.forEach(item => {
+        // توليد عدد عشوائي من الحركات (بين 3 و 8)
+        const numMovements = Math.floor(Math.random() * 6) + 3;
+        
+        for (let i = 0; i < numMovements; i++) {
+          const movementType = movementTypes[Math.floor(Math.random() * movementTypes.length)];
+          const quantity = movementType === "توريد" ? Math.floor(Math.random() * 20) + 5 : 
+                          movementType === "بيع" ? Math.floor(Math.random() * 10) + 1 : 
+                          movementType === "تسوية" ? Math.floor(Math.random() * 5) + 1 : 
+                          Math.floor(Math.random() * 3) + 1;
+          
+          // تاريخ عشوائي خلال السنة الماضية
+          const randomDay = Math.floor(Math.random() * 365);
+          const movementDate = new Date();
+          movementDate.setDate(movementDate.getDate() - randomDay);
+          
+          const formattedDate = movementDate.toISOString().split('T')[0];
+          
+          item.movements.push({
+            id: item.movements.length + 1,
+            type: movementType,
+            quantity: quantity,
+            date: formattedDate,
+            user: users[Math.floor(Math.random() * users.length)],
+            notes: movementType === "توريد" ? "توريد من المورد" : 
+                  movementType === "بيع" ? "بيع للعميل" : 
+                  movementType === "تسوية" ? "تسوية جرد" : "مرتجع من العميل"
+          });
+        }
+      });
+      
+      // عناصر DOM
+      const itemsTableBody = document.getElementById('items-table-body');
+      const lowStockTableBody = document.getElementById('low-stock-table-body');
+      const typesTableBody = document.getElementById('types-table-body');
+      const brandsContainer = document.getElementById('brands-container');
+      const brandFilter = document.getElementById('brand-filter');
+      const typeFilter = document.getElementById('type-filter');
+      const statusFilter = document.getElementById('status-filter');
+      const toast = document.getElementById('toast');
+      const totalItemsEl = document.getElementById('total-items');
+      const totalBrandsEl = document.getElementById('total-brands');
+      const totalTypesEl = document.getElementById('total-types');
+      const lowStockCountEl = document.getElementById('low-stock-count');
+      const barcodeSearch = document.getElementById('barcode-search');
+      const searchBtn = document.getElementById('search-btn');
+      const formTitle = document.getElementById('form-title');
+      const submitBtn = document.getElementById('submit-btn');
+      const cancelEditBtn = document.getElementById('cancel-edit');
+      
+      // عناصر النماذج
+      const addBrandModal = document.getElementById('add-brand-modal');
+      const addTypeModal = document.getElementById('add-type-modal');
+      const barcodeModal = document.getElementById('barcode-modal');
+      const movementModal = document.getElementById('movement-modal');
+      
+      const closeBrandModal = document.querySelector('#add-brand-modal .close-btn');
+      const closeTypeModal = document.querySelector('#add-type-modal .close-btn');
+      const closeBarcodeModal = document.querySelector('#barcode-modal .close-btn');
+      const closeMovementModal = document.querySelector('#movement-modal .close-btn');
+      
+      const cancelBrandBtn = document.getElementById('cancel-brand');
+      const cancelTypeBtn = document.getElementById('cancel-type');
+      const closeBarcodeBtn = document.getElementById('close-barcode');
+      
+      const brandForm = document.getElementById('brand-form');
+      const typeForm = document.getElementById('type-form');
+      const simpleItemForm = document.getElementById('simple-item-form');
+      const editItemIdInput = document.getElementById('edit-item-id');
+      
+      const barcodeSvg = document.getElementById('barcode-svg');
+      const barcodeText = document.getElementById('barcode-text');
+      const printBarcodeBtn = document.getElementById('print-barcode');
+      
+      const movementTableBody = document.getElementById('movement-table-body');
+      const movementItemName = document.getElementById('movement-item-name');
+      const movementItemBarcode = document.getElementById('movement-item-barcode');
+      const movementItemQuantity = document.getElementById('movement-item-quantity');
+      const movementItemDate = document.getElementById('movement-item-date');
+      
+      // متغير لتحديد الصفحة الحالية
+      let currentPage = 'items';
+      
+      // تحديث الإحصائيات
+      function updateStats() {
+        totalItemsEl.textContent = items.length;
+        totalBrandsEl.textContent = brands.length;
+        totalTypesEl.textContent = types.length;
+        
+        const lowStockItems = items.filter(item => item.quantity < item.minQuantity).length;
+        lowStockCountEl.textContent = lowStockItems;
+      }
+      
+      // تحميل قائمة الأصناف
+      function loadItemsTable(searchTerm = '') {
+        itemsTableBody.innerHTML = '';
+        
+        const brandValue = brandFilter.value;
+        const typeValue = typeFilter.value;
+        const statusValue = statusFilter.value;
+        
+        // لا يتم إخفاء الأصناف ذات الكمية صفر في قائمة الأصناف
+        // يتم إخفائها فقط في قائمة المخزون
+        const isInventoryPage = currentPage === 'inventory';
+        
+        items.forEach(item => {
+          // إخفاء الأصناف التي كمية المخزون فيها صفر فقط في قائمة المخزون
+          if (isInventoryPage && item.quantity === 0) return;
+          
+          if (brandValue !== 'all' && item.brand !== brandValue) return;
+          if (typeValue !== 'all' && item.type !== typeValue) return;
+          
+          if (statusValue !== 'all') {
+            if (statusValue === 'available' && item.quantity < item.minQuantity) return;
+            if (statusValue === 'low' && item.quantity >= item.minQuantity) return;
+            if (statusValue === 'out' && item.quantity > 0) return;
+          }
+          
+          if (searchTerm && item.barcode.toLowerCase().indexOf(searchTerm.toLowerCase()) === -1) {
+            return;
+          }
+          
+          const brand = brands.find(b => b.code === item.brand);
+          const brandName = brand ? brand.name : item.brand;
+          
+          // تحديد حالة الصنف
+          let statusClass, statusText;
+          if (item.quantity === 0) {
+            statusClass = 'status-out';
+            statusText = 'منتهي';
+          } else if (item.quantity < item.minQuantity) {
+            statusClass = 'status-low';
+            statusText = 'ناقص';
+          } else {
+            statusClass = 'status-available';
+            statusText = 'متوفر';
+          }
+          
+          const row = document.createElement('tr');
+          if (item.quantity === 0) row.classList.add('critical-item');
+          
+          row.innerHTML = `
+            <td class="code">${item.id}</td>
+            <td>${item.name}</td>
+            <td class="barcode-cell">
+              <span class="barcode-prefix">FU</span>${item.barcode.substring(2)}
+            </td>
+            <td>${brandName}</td>
+            <td>${item.type}</td>
+            <td>${item.quantity}</td>
+            <td>${item.cost.toFixed(2)}</td>
+            <td>${item.price.toFixed(2)}</td>
+            <td>${item.part1 || '-'}</td>
+            <td>${item.part2 || '-'}</td>
+            <td>
+              <span class="status-indicator ${statusClass}">
+                ${statusText}
+              </span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="action-btn eye-btn" data-id="${item.id}" title="عرض حركة الصنف">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button class="action-btn barcode-btn" data-id="${item.id}" title="عرض الباركود">
+                  <i class="fas fa-barcode"></i>
+                </button>
+                <button class="action-btn edit-btn" data-id="${item.id}" title="تعديل">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="action-btn delete-btn" data-id="${item.id}" title="حذف">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          `;
+          itemsTableBody.appendChild(row);
+        });
+        
+        // إضافة مستمعي الأحداث للأزرار
+        document.querySelectorAll('#items-section .eye-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const itemId = this.getAttribute('data-id');
+            showMovementModal(itemId);
+          });
+        });
+        
+        document.querySelectorAll('#items-section .barcode-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const itemId = this.getAttribute('data-id');
+            showBarcodeModal(itemId);
+          });
+        });
+        
+        document.querySelectorAll('#items-section .edit-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const itemId = this.getAttribute('data-id');
+            editItem(itemId);
+          });
+        });
+        
+        document.querySelectorAll('#items-section .delete-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const itemId = this.getAttribute('data-id');
+            deleteItem(itemId);
+          });
+        });
+        
+        updateStats();
+      }
+      
+      // تحميل الأصناف الناقصة
+      function loadLowStockItems() {
+        lowStockTableBody.innerHTML = '';
+        
+        const lowStockItems = items.filter(item => item.quantity < item.minQuantity);
+        
+        lowStockItems.forEach(item => {
+          const brand = brands.find(b => b.code === item.brand);
+          const brandName = brand ? brand.name : item.brand;
+          const shortage = item.minQuantity - item.quantity;
+          const isCritical = item.quantity === 0;
+          
+          const row = document.createElement('tr');
+          if (isCritical) {
+            row.classList.add('critical-item');
+            row.style.background = 'rgba(192, 57, 43, 0.3)';
+          }
+          
+          row.innerHTML = `
+            <td class="code">${item.id}</td>
+            <td>${item.name}</td>
+            <td class="barcode-cell">
+              <span class="barcode-prefix">FU</span>${item.barcode.substring(2)}
+            </td>
+            <td>${brandName}</td>
+            <td>${item.quantity}</td>
+            <td>${item.minQuantity}</td>
+            <td>${shortage}</td>
+            <td>
+              <span class="status-indicator ${isCritical ? 'status-out' : 'status-low'}">
+                ${isCritical ? 'منتهي' : 'ناقص'}
+              </span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="action-btn eye-btn" data-id="${item.id}">
+                  <i class="fas fa-eye"></i> حركة
+                </button>
+                <button class="action-btn edit-btn" data-id="${item.id}">
+                  <i class="fas fa-edit"></i> تعديل
+                </button>
+              </div>
+            </td>
+          `;
+          lowStockTableBody.appendChild(row);
+        });
+        
+        // إضافة مستمعي الأحداث لأزرار حركة الصنف في قسم الأصناف الناقصة
+        document.querySelectorAll('#low-stock-section .eye-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const itemId = this.getAttribute('data-id');
+            showMovementModal(itemId);
+          });
+        });
+        
+        document.querySelectorAll('#low-stock-section .edit-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const itemId = this.getAttribute('data-id');
+            editItem(itemId);
+          });
+        });
+      }
+      
+      // تحميل العلامات التجارية
+      function loadBrands() {
+        brandsContainer.innerHTML = '';
+        
+        brands.forEach(brand => {
+          const brandCard = document.createElement('div');
+          brandCard.className = 'brand-card';
+          
+          const brandItems = items.filter(item => item.brand === brand.code).length;
+          
+          brandCard.innerHTML = `
+            <div class="brand-header">
+              <div class="brand-icon">
+                <i class="fas fa-tag"></i>
+              </div>
+              <div>
+                <div class="brand-name">${brand.name}</div>
+                <div style="color: #bdc3c7; font-size: 0.9rem;">${brand.code}</div>
+              </div>
+            </div>
+            
+            <div class="brand-description">
+              ${brand.description}
+            </div>
+            
+            <div class="brand-stats">
+              <div class="brand-stat">
+                <div class="stat-number">${brandItems}</div>
+                <div class="stat-label">الأصناف</div>
+              </div>
+              <div class="brand-stat">
+                <div class="stat-number">${Math.floor(Math.random() * 100)}%</div>
+                <div class="stat-label">الشعبية</div>
+              </div>
+            </div>
+            
+            <div class="brand-actions">
+              <button class="btn btn-primary edit-brand-btn" data-id="${brand.id}">
+                <i class="fas fa-edit"></i> تعديل
+              </button>
+              <button class="btn btn-danger delete-brand-btn" data-id="${brand.id}">
+                <i class="fas fa-trash"></i> حذف
+              </button>
+            </div>
+          `;
+          brandsContainer.appendChild(brandCard);
+        });
+        
+        // إضافة مستمعي الأحداث لأزرار التعديل والحذف للعلامات التجارية
+        document.querySelectorAll('.edit-brand-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const brandId = this.getAttribute('data-id');
+            editBrand(brandId);
+          });
+        });
+        
+        document.querySelectorAll('.delete-brand-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const brandId = this.getAttribute('data-id');
+            deleteBrand(brandId);
+          });
+        });
+        
+        updateStats();
+      }
+      
+      // تحميل قائمة الأنواع
+      function loadTypes() {
+        typesTableBody.innerHTML = '';
+        
+        types.forEach(type => {
+          const typeItems = items.filter(item => item.type === type.name).length;
+          
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td class="code">${type.id}</td>
+            <td>${type.name}</td>
+            <td>${typeItems}</td>
+            <td>${type.description}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="action-btn edit-btn" data-id="${type.id}">
+                  <i class="fas fa-edit"></i> تعديل
+                </button>
+                <button class="action-btn delete-btn" data-id="${type.id}">
+                  <i class="fas fa-trash"></i> حذف
+                </button>
+              </div>
+            </td>
+          `;
+          typesTableBody.appendChild(row);
+        });
+        
+        // إضافة مستمعي الأحداث لأزرار التعديل والحذف للأنواع
+        document.querySelectorAll('#types-section .edit-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const typeId = this.getAttribute('data-id');
+            editType(typeId);
+          });
+        });
+        
+        document.querySelectorAll('#types-section .delete-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const typeId = this.getAttribute('data-id');
+            deleteType(typeId);
+          });
+        });
+        
+        updateStats();
+      }
+      
+      // تعبئة الفلاتر
+      function populateFilters() {
+        // فلتر العلامات التجارية
+        brandFilter.innerHTML = '<option value="all">الكل</option>';
+        document.getElementById('simple-item-brand').innerHTML = '<option value="">اختر علامة تجارية</option>';
+        
+        brands.forEach(brand => {
+          const option = document.createElement('option');
+          option.value = brand.code;
+          option.textContent = brand.name;
+          brandFilter.appendChild(option);
+          
+          const option2 = document.createElement('option');
+          option2.value = brand.code;
+          option2.textContent = brand.name;
+          document.getElementById('simple-item-brand').appendChild(option2);
+        });
+        
+        // فلتر الأنواع
+        typeFilter.innerHTML = '<option value="all">الكل</option>';
+        document.getElementById('simple-item-type').innerHTML = '<option value="">اختر نوع الصنف</option>';
+        
+        types.forEach(type => {
+          const option = document.createElement('option');
+          option.value = type.name;
+          option.textContent = type.name;
+          typeFilter.appendChild(option);
+          
+          const option2 = document.createElement('option');
+          option2.value = type.name;
+          option2.textContent = type.name;
+          document.getElementById('simple-item-type').appendChild(option2);
+        });
+      }
+      
+      // إظهار رسالة تنبيه
+      function showToast(message, isError = false) {
+        const toastIcon = toast.querySelector('i');
+        const toastMessage = toast.querySelector('span');
+        
+        toastMessage.textContent = message;
+        
+        if (isError) {
+          toast.style.background = '#e74c3c';
+          toastIcon.className = 'fas fa-exclamation-circle';
+        } else {
+          toast.style.background = '#27ae60';
+          toastIcon.className = 'fas fa-check-circle';
+        }
+        
+        toast.classList.add('show');
+        
+        setTimeout(() => {
+          toast.classList.remove('show');
+        }, 3000);
+      }
+      
+      // إظهار نافذة الباركود
+      function showBarcodeModal(itemId) {
+        const item = items.find(item => item.id == itemId);
+        if (item) {
+          // إنشاء الباركود
+          barcodeSvg.innerHTML = '';
+          JsBarcode(barcodeSvg, item.barcode, {
+            format: "CODE128",
+            displayValue: false,
+            height: 60,
+            width: 2
+          });
+          
+          barcodeText.textContent = `باركود الصنف: ${item.barcode}`;
+          barcodeModal.style.display = 'block';
+        }
+      }
+      
+      // دالة تحديث جدول الحركة
+      function updateMovementTable(filterType) {
+        movementTableBody.innerHTML = '';
+        
+        if (!currentMovementItem) return;
+        
+        const filteredMovements = filterType === 'all' 
+          ? currentMovementItem.movements 
+          : currentMovementItem.movements.filter(m => m.type === filterType);
+        
+        filteredMovements.forEach(movement => {
+          const row = document.createElement('tr');
+          
+          let typeClass = '';
+          if (movement.type === "توريد") typeClass = 'type-supply';
+          else if (movement.type === "بيع") typeClass = 'type-sale';
+          else if (movement.type === "تسوية") typeClass = 'type-adjustment';
+          else if (movement.type === "مرتجع") typeClass = 'type-return';
+          
+          row.innerHTML = `
+            <td>${movement.date}</td>
+            <td>
+              <span class="movement-type ${typeClass}">${movement.type}</span>
+            </td>
+            <td>${movement.quantity}</td>
+            <td>${movement.user}</td>
+            <td>${movement.notes}</td>
+          `;
+          movementTableBody.appendChild(row);
+        });
+      }
+      
+      // إظهار نافذة حركة الصنف
+      function showMovementModal(itemId) {
+        const item = items.find(item => item.id == itemId);
+        if (item) {
+          // تخزين الصنف الحالي للاستخدام في التصفية
+          currentMovementItem = item;
+          
+          // تحديث تفاصيل الصنف
+          movementItemName.textContent = item.name;
+          movementItemBarcode.textContent = item.barcode;
+          movementItemQuantity.textContent = item.quantity;
+          movementItemDate.textContent = item.addedDate;
+          
+          // تحديث جدول الحركة مع الفلتر الأولي (عرض الكل)
+          updateMovementTable('all');
+          
+          movementModal.style.display = 'block';
+        }
+      }
+      
+      // إدارة النماذج
+      function setupModals() {
+        // فتح نموذج إضافة علامة تجارية
+        document.getElementById('add-brand').addEventListener('click', function() {
+          document.getElementById('edit-brand-id').value = '';
+          document.getElementById('brand-form').reset();
+          addBrandModal.style.display = 'block';
+        });
+        
+        // فتح نموذج إضافة نوع
+        document.getElementById('add-type').addEventListener('click', function() {
+          document.getElementById('edit-type-id').value = '';
+          document.getElementById('type-form').reset();
+          addTypeModal.style.display = 'block';
+        });
+        
+        // إغلاق النماذج
+        const closeModal = function(modal) {
+          modal.style.display = 'none';
+        };
+        
+        closeBrandModal.addEventListener('click', function() {
+          closeModal(addBrandModal);
+        });
+        
+        closeTypeModal.addEventListener('click', function() {
+          closeModal(addTypeModal);
+        });
+        
+        closeBarcodeModal.addEventListener('click', function() {
+          closeModal(barcodeModal);
+        });
+        
+        closeMovementModal.addEventListener('click', function() {
+          closeModal(movementModal);
+        });
+        
+        cancelBrandBtn.addEventListener('click', function() {
+          closeModal(addBrandModal);
+        });
+        
+        cancelTypeBtn.addEventListener('click', function() {
+          closeModal(addTypeModal);
+        });
+        
+        closeBarcodeBtn.addEventListener('click', function() {
+          closeModal(barcodeModal);
+        });
+        
+        // إغلاق بالنقر خارج النموذج
+        window.addEventListener('click', function(event) {
+          if (event.target === addBrandModal) closeModal(addBrandModal);
+          if (event.target === addTypeModal) closeModal(addTypeModal);
+          if (event.target === barcodeModal) closeModal(barcodeModal);
+          if (event.target === movementModal) closeModal(movementModal);
+        });
+        
+        // طباعة الباركود
+        printBarcodeBtn.addEventListener('click', function() {
+          window.print();
+        });
+      }
+      
+      // معالجة إضافة/تعديل صنف
+      function setupSimpleItemForm() {
+        simpleItemForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          
+          const editId = editItemIdInput.value;
+          
+          // إنشاء باركود كامل مع البادئة "FU"
+          const barcode = "FU" + document.getElementById('simple-item-barcode').value;
+          
+          if (editId) {
+            // تحديث الصنف الحالي
+            const itemIndex = items.findIndex(item => item.id == editId);
+            if (itemIndex !== -1) {
+              items[itemIndex] = {
+                ...items[itemIndex],
+                name: document.getElementById('simple-item-name').value,
+                part1: document.getElementById('simple-item-part1').value,
+                part2: document.getElementById('simple-item-part2').value,
+                barcode: barcode,
+                brand: document.getElementById('simple-item-brand').value,
+                type: document.getElementById('simple-item-type').value,
+                quantity: parseInt(document.getElementById('simple-item-quantity').value),
+                cost: parseFloat(document.getElementById('simple-item-cost').value),
+                price: parseFloat(document.getElementById('simple-item-price').value)
+              };
+              
+              showToast(`تم تحديث الصنف "${items[itemIndex].name}" بنجاح`);
+            }
+          } else {
+            // إنشاء معرف جديد للصنف
+            const newId = items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 100;
+            
+            // إنشاء كائن الصنف الجديد
+            const newItem = {
+              id: newId,
+              name: document.getElementById('simple-item-name').value,
+              part1: document.getElementById('simple-item-part1').value,
+              part2: document.getElementById('simple-item-part2').value,
+              barcode: barcode,
+              brand: document.getElementById('simple-item-brand').value,
+              type: document.getElementById('simple-item-type').value,
+              quantity: parseInt(document.getElementById('simple-item-quantity').value),
+              minQuantity: 10,
+              cost: parseFloat(document.getElementById('simple-item-cost').value),
+              price: parseFloat(document.getElementById('simple-item-price').value),
+              description: "",
+              addedDate: new Date().toISOString().split('T')[0],
+              movements: []
+            };
+            
+            // إضافة الصنف الجديد إلى المصفوفة
+            items.push(newItem);
+            showToast(`تمت إضافة الصنف "${newItem.name}" بنجاح`);
+          }
+          
+          // تحديث الواجهة
+          loadItemsTable();
+          loadLowStockItems();
+          loadTypes();
+          
+          // إعادة تعيين النموذج
+          setFormInAddMode();
+        });
+        
+        // إلغاء التعديل
+        cancelEditBtn.addEventListener('click', setFormInAddMode);
+      }
+      
+      // وضع نموذج الإضافة
+      function setFormInAddMode() {
+        simpleItemForm.reset();
+        editItemIdInput.value = '';
+        formTitle.innerHTML = '<i class="fas fa-plus-circle"></i> إضافة صنف جديد';
+        submitBtn.innerHTML = '<i class="fas fa-plus"></i> إضافة صنف';
+        cancelEditBtn.style.display = 'none';
+      }
+      
+      // وضع نموذج التعديل
+      function setFormInEditMode() {
+        formTitle.innerHTML = '<i class="fas fa-edit"></i> تحديث صنف';
+        submitBtn.innerHTML = '<i class="fas fa-save"></i> تحديث';
+        cancelEditBtn.style.display = 'inline-block';
+      }
+      
+      // معالجة إضافة/تعديل علامة تجارية جديدة
+      function setupBrandForm() {
+        brandForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          
+          const editId = document.getElementById('edit-brand-id').value;
+          
+          if (editId) {
+            // تعديل علامة تجارية موجودة
+            const index = brands.findIndex(b => b.id == editId);
+            if (index !== -1) {
+              brands[index] = {
+                id: parseInt(editId),
+                name: document.getElementById('brand-name').value,
+                code: document.getElementById('brand-code').value.toUpperCase(),
+                description: document.getElementById('brand-description').value,
+                items: brands[index].items
+              };
+              showToast('تم تحديث العلامة التجارية بنجاح');
+            }
+          } else {
+            // إنشاء معرف جديد للعلامة التجارية
+            const newId = brands.length > 0 ? Math.max(...brands.map(b => b.id)) + 1 : 1;
+            
+            // إنشاء كائن العلامة التجارية الجديدة
+            const newBrand = {
+              id: newId,
+              name: document.getElementById('brand-name').value,
+              code: document.getElementById('brand-code').value.toUpperCase(),
+              description: document.getElementById('brand-description').value,
+              items: 0
+            };
+            
+            // إضافة العلامة التجارية الجديدة إلى المصفوفة
+            brands.push(newBrand);
+            showToast(`تمت إضافة العلامة التجارية "${newBrand.name}" بنجاح`);
+          }
+          
+          // تحديث الواجهة
+          populateFilters();
+          loadBrands();
+          
+          // إغلاق النموذج وإعادة تعيينه
+          addBrandModal.style.display = 'none';
+          brandForm.reset();
+        });
+      }
+      
+      // معالجة إضافة/تعديل نوع جديد
+      function setupTypeForm() {
+        typeForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          
+          const editId = document.getElementById('edit-type-id').value;
+          
+          if (editId) {
+            // تعديل نوع موجود
+            const index = types.findIndex(t => t.id == editId);
+            if (index !== -1) {
+              types[index] = {
+                id: parseInt(editId),
+                name: document.getElementById('type-name').value,
+                description: document.getElementById('type-description').value,
+                items: types[index].items
+              };
+              showToast('تم تحديث النوع بنجاح');
+            }
+          } else {
+            // إنشاء معرف جديد للنوع
+            const newId = types.length > 0 ? Math.max(...types.map(t => t.id)) + 1 : 1;
+            
+            // إنشاء كائن النوع الجديد
+            const newType = {
+              id: newId,
+              name: document.getElementById('type-name').value,
+              description: document.getElementById('type-description').value,
+              items: 0
+            };
+            
+            // إضافة النوع الجديد إلى المصفوفة
+            types.push(newType);
+            showToast(`تمت إضافة النوع "${newType.name}" بنجاح`);
+          }
+          
+          // تحديث الواجهة
+          populateFilters();
+          loadTypes();
+          
+          // إغلاق النموذج وإعادة تعيينه
+          addTypeModal.style.display = 'none';
+          typeForm.reset();
+        });
+      }
+      
+      // تعديل صنف
+      function editItem(itemId) {
+        const item = items.find(item => item.id == itemId);
+        if (item) {
+          document.getElementById('simple-item-name').value = item.name;
+          document.getElementById('simple-item-barcode').value = item.barcode.substring(2);
+          document.getElementById('simple-item-brand').value = item.brand;
+          document.getElementById('simple-item-type').value = item.type;
+          document.getElementById('simple-item-part1').value = item.part1 || '';
+          document.getElementById('simple-item-part2').value = item.part2 || '';
+          document.getElementById('simple-item-quantity').value = item.quantity;
+          document.getElementById('simple-item-cost').value = item.cost;
+          document.getElementById('simple-item-price').value = item.price;
+          editItemIdInput.value = item.id;
+          
+          setFormInEditMode();
+          
+          // التمرير إلى نموذج الإضافة
+          document.querySelector('.add-item-form').scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+      
+      // حذف صنف
+      function deleteItem(itemId) {
+        if (confirm('هل أنت متأكد من حذف هذا الصنف؟')) {
+          const itemIndex = items.findIndex(item => item.id == itemId);
+          if (itemIndex !== -1) {
+            const itemName = items[itemIndex].name;
+            items.splice(itemIndex, 1);
+            loadItemsTable();
+            loadLowStockItems();
+            loadTypes();
+            showToast(`تم حذف الصنف "${itemName}" بنجاح`);
+          }
+        }
+      }
+      
+      // تعديل علامة تجارية
+      function editBrand(brandId) {
+        const brand = brands.find(b => b.id == brandId);
+        if (brand) {
+          document.getElementById('edit-brand-id').value = brand.id;
+          document.getElementById('brand-name').value = brand.name;
+          document.getElementById('brand-code').value = brand.code;
+          document.getElementById('brand-description').value = brand.description;
+          addBrandModal.style.display = 'block';
+        }
+      }
+      
+      // حذف علامة تجارية
+      function deleteBrand(brandId) {
+        if (confirm('هل أنت متأكد من حذف هذه العلامة التجارية؟')) {
+          const brandIndex = brands.findIndex(b => b.id == brandId);
+          if (brandIndex !== -1) {
+            const brandName = brands[brandIndex].name;
+            brands.splice(brandIndex, 1);
+            populateFilters();
+            loadBrands();
+            showToast(`تم حذف العلامة التجارية "${brandName}" بنجاح`);
+          }
+        }
+      }
+      
+      // تعديل نوع
+      function editType(typeId) {
+        const type = types.find(t => t.id == typeId);
+        if (type) {
+          document.getElementById('edit-type-id').value = type.id;
+          document.getElementById('type-name').value = type.name;
+          document.getElementById('type-description').value = type.description;
+          addTypeModal.style.display = 'block';
+        }
+      }
+      
+      // حذف نوع
+      function deleteType(typeId) {
+        if (confirm('هل أنت متأكد من حذف هذا النوع؟')) {
+          const typeIndex = types.findIndex(t => t.id == typeId);
+          if (typeIndex !== -1) {
+            const typeName = types[typeIndex].name;
+            types.splice(typeIndex, 1);
+            populateFilters();
+            loadTypes();
+            showToast(`تم حذف النوع "${typeName}" بنجاح`);
+          }
+        }
+      }
+      
+      // التنقل بين الصفحات
+      function setupNavigation() {
+        const navLinks = document.querySelectorAll('.sidebar-menu a');
+        const sections = {
+          'items': document.getElementById('items-section'),
+          'low-stock': document.getElementById('low-stock-section'),
+          'brands': document.getElementById('brands-section'),
+          'types': document.getElementById('types-section'),
+          'inventory': document.getElementById('items-section')
+        };
+        
+        navLinks.forEach(link => {
+          link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            navLinks.forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+            
+            Object.values(sections).forEach(section => {
+              if (section) section.style.display = 'none';
+            });
+            
+            const pageId = this.getAttribute('data-page');
+            currentPage = pageId;
+            
+            if (sections[pageId]) {
+              sections[pageId].style.display = 'block';
+              
+              if (pageId === 'items' || pageId === 'inventory') {
+                loadItemsTable();
+                // تحديث عنوان القسم بناءً على الصفحة
+                const sectionTitle = document.querySelector('#items-section .section-title');
+                if (pageId === 'inventory') {
+                  sectionTitle.innerHTML = '<i class="fas fa-list-ol"></i> قائمة المخزون';
+                } else {
+                  sectionTitle.innerHTML = '<i class="fas fa-list"></i> قائمة الأصناف';
+                }
+              }
+              if (pageId === 'low-stock') loadLowStockItems();
+              if (pageId === 'brands') loadBrands();
+              if (pageId === 'types') loadTypes();
+            }
+          });
+        });
+        
+        document.querySelector('.sidebar-menu a.active').click();
+      }
+      
+      // تهيئة الأزرار
+      function setupButtons() {
+        document.getElementById('refresh-items').addEventListener('click', function() {
+          loadItemsTable();
+          showToast('تم تحديث قائمة الأصناف');
+        });
+        
+        document.getElementById('refresh-low-stock').addEventListener('click', function() {
+          loadLowStockItems();
+          showToast('تم تحديث قائمة الأصناف الناقصة');
+        });
+        
+        document.getElementById('refresh-brands').addEventListener('click', function() {
+          loadBrands();
+          showToast('تم تحديث قائمة العلامات التجارية');
+        });
+        
+        document.getElementById('refresh-types').addEventListener('click', function() {
+          loadTypes();
+          showToast('تم تحديث قائمة الأنواع');
+        });
+        
+        brandFilter.addEventListener('change', function() {
+          loadItemsTable(barcodeSearch.value);
+        });
+        
+        typeFilter.addEventListener('change', function() {
+          loadItemsTable(barcodeSearch.value);
+        });
+        
+        statusFilter.addEventListener('change', function() {
+          loadItemsTable(barcodeSearch.value);
+        });
+        
+        searchBtn.addEventListener('click', function() {
+          loadItemsTable(barcodeSearch.value);
+        });
+        
+        barcodeSearch.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            loadItemsTable(barcodeSearch.value);
+          }
+        });
+        
+        document.getElementById('movement-type-filter').addEventListener('change', function() {
+          const filterType = this.value;
+          updateMovementTable(filterType);
+        });
+      }
+      
+      // بدء تشغيل النظام
+      function init() {
+        populateFilters();
+        setupNavigation();
+        setupButtons();
+        setupModals();
+        setupSimpleItemForm();
+        setupBrandForm();
+        setupTypeForm();
+        loadItemsTable();
+        updateStats();
+        
+        setTimeout(() => {
+          showToast('تم تحميل النظام بنجاح!');
+        }, 1000);
+      }
+      
+      // تشغيل النظام
+      init();
+    });
+  </script>
+</body>
+</html>
